@@ -9,8 +9,9 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        FractionalArchView()
-            .frame(height: 200)
+                FractionalArchView(value: 0, range: -50...50)
+                    .frame(height: 200)
+            
     }
 }
 
@@ -21,91 +22,100 @@ struct ContentView_Previews: PreviewProvider {
 }
 
 struct FractionalArchView: View {
-    @State private var value: CGFloat = 50 // Example value, it can be updated dynamically
+    @State private var value: CGFloat
+    
+    init(value: CGFloat, range: ClosedRange<CGFloat>) {
+        self.value = Self.normalize(value: value, min: range.lowerBound, max: range.upperBound)
+    }
     
     var body: some View {
-        VStack {
-            GeometryReader { geometry in
-                ZStack {
-                    // Draw the fractional arch
-                    Path { path in
-                        let width = geometry.size.width
-                        let height = geometry.size.height
-                        let centerX = width / 2
-                        let centerY = height
-                        let radius = width / 2
-                        path.addArc(center: CGPoint(x: centerX, y: centerY),
-                                    radius: radius,
-                                    startAngle: .degrees(180 + 67.5),
-                                    endAngle: .degrees(180 + 67.5 + 14.5),
-                                    clockwise: false)
-                    }
-                    .stroke(Color.hex(0xFF9500), style: .init(lineWidth: 4))
-                    
-                    Path { path in
-                        let width = geometry.size.width
-                        let height = geometry.size.height
-                        let centerX = width / 2
-                        let centerY = height
-                        let radius = width / 2
-                        path.addArc(center: CGPoint(x: centerX, y: centerY),
-                                    radius: radius,
-                                    startAngle: .degrees(180 + 67.5 + 15),
-                                    endAngle: .degrees(180 + 67.5 + 15 + 15),
-                                    clockwise: false)
-                    }
-                    .stroke(Color.blue, style: .init(lineWidth: 4))
-                    
-                    Path { path in
-                        let width = geometry.size.width
-                        let height = geometry.size.height
-                        let centerX = width / 2
-                        let centerY = height
-                        let radius = width / 2
-                        path.addArc(center: CGPoint(x: centerX, y: centerY),
-                                    radius: radius,
-                                    startAngle: .degrees(180 + 67.5 + 15 + 15.5),
-                                    endAngle: .degrees(180 + 67.5 + 15 + 15 + 15),
-                                    clockwise: false)
-                    }
-                    .stroke(Color.blue, style: .init(lineWidth: 4))
-                    
-                    // Draw the ball
-                    Circle()
-                        .fill(Color.white)
-                        .overlay(
-                            Circle().stroke(lineWidth: 1).foregroundStyle(Color.black)
-                        )
-                        .frame(width: 12, height: 12)
-                        .position(self.ballPosition(in: geometry.size))
-                        
+        GeometryReader { geometry in
+            ZStack {
+                let width = geometry.size.width
+                let height = geometry.size.height
+                let centerX = width / 2
+                let centerY = height
+                let radius = width / 2
+                Path { path in
+                    path.addArc(center: CGPoint(x: centerX, y: centerY),
+                                radius: radius,
+                                startAngle: .degrees(180 + 67.5),
+                                endAngle: .degrees(180 + 67.5 + 7),
+                                clockwise: false)
+                    path.closeSubpath()
                 }
+                .stroke(Color.hex(0xFF9500), style: .init(lineWidth: 5, lineCap: .round))
+                
+                Path { path in
+                    path.addArc(center: CGPoint(x: centerX, y: centerY),
+                                radius: radius,
+                                startAngle: .degrees(180 + 67.5 + 7),
+                                endAngle: .degrees(180 + 67.5 + 14.5),
+                                clockwise: false)
+                }
+                .stroke(
+                    Color.hex(0xFF9500),
+                    style: .init(lineWidth: 5))
+                
+                Path { path in
+                    path.addArc(center: CGPoint(x: centerX, y: centerY),
+                                radius: radius,
+                                startAngle: .degrees(180 + 67.5 + 15),
+                                endAngle: .degrees(180 + 67.5 + 15 + 15),
+                                clockwise: false)
+                }
+                .stroke(Color.hex(0x00E35F), style: .init(lineWidth: 5))
+                
+                Path { path in
+                    path.addArc(center: CGPoint(x: centerX, y: centerY),
+                                radius: radius,
+                                startAngle: .degrees(180 + 67.5 + 15 + 15.5),
+                                endAngle: .degrees(180 + 67.5 + 15 + 15 + 8),
+                                clockwise: false)
+                }
+                .stroke(Color.hex(0x009C41), style: .init(lineWidth: 5))
+                
+                Path { path in
+                    path.addArc(center: CGPoint(x: centerX, y: centerY),
+                                radius: radius,
+                                startAngle: .degrees(180 + 67.5 + 15 + 15.5 + 7),
+                                endAngle: .degrees(180 + 67.5 + 15 + 15 + 15),
+                                clockwise: false)
+                }
+                .stroke(
+                    Color.hex(0x009C41),
+                    style: .init(lineWidth: 5, lineCap: .round))
+                
+                Circle()
+                    .fill(Color.white)
+                    .overlay(
+                        Circle().stroke(lineWidth: 1).foregroundStyle(Color.black)
+                    )
+                    .frame(width: 12, height: 12)
+                    .position(self.ballPosition(in: geometry.size))
+                
             }
-            .frame(height: 200)
-            
-            // Slider to change the value
-            Slider(value: $value, in: 0...100)
-                .padding()
-            
         }
     }
     
     private func ballPosition(in size: CGSize) -> CGPoint {
-        // Adjust angle calculation to match the arch segment
         let startAngle =  180 - 67.5
         let endAngle = 67.5
         let totalAngle = endAngle - startAngle
         
-        let angle = Angle(degrees: startAngle + (totalAngle * Double(value / 100)))
+        let angle = Angle(degrees: startAngle + (totalAngle * value / 100))
         let radius = size.width / 2
         let centerX = size.width / 2
         let centerY = size.height
         
-        // Reverse the y-axis calculation
         let x = centerX + radius * cos(angle.radians)
         let y = centerY - radius * sin(angle.radians)
         
         return CGPoint(x: x, y: y)
+    }
+    
+    static private func normalize(value: CGFloat, min: CGFloat, max: CGFloat) -> CGFloat {
+        return (value - min) / (max - min) * 100
     }
 }
 
