@@ -12,7 +12,7 @@ struct ContentView: View {
         VStack {
             Color.clear.frame(maxHeight: .infinity)
             FractionalArchView(value: 0, range: 0...100)
-                .frame(height: 100)
+                .frame(height: 40)
             HStack {
                 FractionalArchView(value: 0, range: 0...100)
                     .frame(height: 50)
@@ -73,7 +73,7 @@ struct FractionalArchView: View {
                             Circle().stroke(lineWidth: 1).foregroundStyle(Color.black)
                         )
                         .frame(width: 12, height: 12)
-                        .position(self.ballPosition(in: geometry.size, insetInArch: 4))
+                        .position(self.ballPosition(in: geometry.size, insetInArch: 5))
                     
                 }
             }
@@ -89,9 +89,9 @@ struct FractionalArchView: View {
         let totalAngle = endAngle - startAngle
         
         let angle = Angle(degrees: startAngle + (totalAngle * value / 100))
-        let radius = size.width - insetInArch/2
+        let radius = (size.width * 1.3) - insetInArch/2
         let centerX = size.width / 2
-        let centerY = size.width
+        let centerY = size.width * 1.3
         
         let x = centerX + radius * cos(angle.radians)
         let y = centerY - radius * sin(angle.radians)
@@ -113,8 +113,8 @@ struct Arch: InsettableShape{
     func path(in rect: CGRect) -> Path {
         let width = rect.width
         let centerX = width / 2
-        let centerY = width
-        let radius = width
+        let centerY = width * 1.3
+        let radius = width * 1.3
         return Path { path in
             path.addArc(center: CGPoint(x: centerX, y: centerY),
                         radius: radius - insetAmount,
