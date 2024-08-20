@@ -9,9 +9,14 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-                FractionalArchView(value: 0, range: -50...50)
-                    .frame(height: 200)
-            
+        VStack {
+            Color.clear.frame(maxHeight: .infinity)
+            FractionalArchView(value: 0, range: 0...100)
+                .background(.blue.opacity(0.5))
+                .frame(height: 100)
+            Color.clear.frame(maxHeight: .infinity)
+        }
+       
     }
 }
 
@@ -23,77 +28,59 @@ struct ContentView_Previews: PreviewProvider {
 
 struct FractionalArchView: View {
     @State private var value: CGFloat
+    let range: ClosedRange<CGFloat>
     
     init(value: CGFloat, range: ClosedRange<CGFloat>) {
+        self.range = range
         self.value = Self.normalize(value: value, min: range.lowerBound, max: range.upperBound)
     }
     
     var body: some View {
-        GeometryReader { geometry in
-            ZStack {
-                let width = geometry.size.width
-                let height = geometry.size.height
-                let centerX = width / 2
-                let centerY = height
-                let radius = width / 2
-                Path { path in
-                    path.addArc(center: CGPoint(x: centerX, y: centerY),
-                                radius: radius,
-                                startAngle: .degrees(180 + 67.5),
-                                endAngle: .degrees(180 + 67.5 + 7),
-                                clockwise: false)
-                    path.closeSubpath()
-                }
-                .stroke(Color.hex(0xFF9500), style: .init(lineWidth: 5, lineCap: .round))
-                
-                Path { path in
-                    path.addArc(center: CGPoint(x: centerX, y: centerY),
-                                radius: radius,
-                                startAngle: .degrees(180 + 67.5 + 7),
-                                endAngle: .degrees(180 + 67.5 + 14.5),
-                                clockwise: false)
-                }
-                .stroke(
-                    Color.hex(0xFF9500),
-                    style: .init(lineWidth: 5))
-                
-                Path { path in
-                    path.addArc(center: CGPoint(x: centerX, y: centerY),
-                                radius: radius,
-                                startAngle: .degrees(180 + 67.5 + 15),
-                                endAngle: .degrees(180 + 67.5 + 15 + 15),
-                                clockwise: false)
-                }
-                .stroke(Color.hex(0x00E35F), style: .init(lineWidth: 5))
-                
-                Path { path in
-                    path.addArc(center: CGPoint(x: centerX, y: centerY),
-                                radius: radius,
-                                startAngle: .degrees(180 + 67.5 + 15 + 15.5),
-                                endAngle: .degrees(180 + 67.5 + 15 + 15 + 8),
-                                clockwise: false)
-                }
-                .stroke(Color.hex(0x009C41), style: .init(lineWidth: 5))
-                
-                Path { path in
-                    path.addArc(center: CGPoint(x: centerX, y: centerY),
-                                radius: radius,
-                                startAngle: .degrees(180 + 67.5 + 15 + 15.5 + 7),
-                                endAngle: .degrees(180 + 67.5 + 15 + 15 + 15),
-                                clockwise: false)
-                }
-                .stroke(
-                    Color.hex(0x009C41),
-                    style: .init(lineWidth: 5, lineCap: .round))
-                
-                Circle()
-                    .fill(Color.white)
-                    .overlay(
-                        Circle().stroke(lineWidth: 1).foregroundStyle(Color.black)
+        VStack {
+            GeometryReader { geometry in
+                ZStack {
+                    Arch(startAngle: .degrees(180 + 67.5), endAngle: .degrees(180 + 67.5 + 7))
+                        .stroke(
+                            Color.hex(0xFF9500), style: .init(lineWidth: 5, lineCap: .round)
+                        )
+                    
+                    Arch(startAngle: .degrees(180 + 67.5 + 7), endAngle: .degrees(180 + 67.5 + 14.5))
+                        .stroke(
+                            Color.hex(0xFF9500),
+                            style: .init(lineWidth: 5))
+                    
+                    Arch(
+                        startAngle: .degrees(180 + 67.5 + 15),
+                        endAngle: .degrees(180 + 67.5 + 15 + 15)
                     )
-                    .frame(width: 12, height: 12)
-                    .position(self.ballPosition(in: geometry.size))
-                
+                    .stroke(Color.hex(0x00E35F), style: .init(lineWidth: 5))
+                    
+                    Arch(
+                        startAngle: .degrees(180 + 67.5 + 15 + 15.5),
+                        endAngle: .degrees(180 + 67.5 + 15 + 15 + 8)
+                    )
+                    .stroke(Color.hex(0x009C41), style: .init(lineWidth: 5))
+                   
+                    Arch(
+                        startAngle: .degrees(180 + 67.5 + 15 + 15.5 + 7), endAngle: .degrees(180 + 67.5 + 15 + 15 + 15)
+                    )
+                    .stroke(
+                        Color.hex(0x009C41),
+                        style: .init(lineWidth: 5, lineCap: .round))
+                    
+                    Circle()
+                        .fill(Color.white)
+                        .overlay(
+                            Circle().stroke(lineWidth: 1).foregroundStyle(Color.black)
+                        )
+                        .frame(width: 12, height: 12)
+                        .position(self.ballPosition(in: geometry.size))
+                    
+                }
+            }
+            
+            Slider(value: $value, in: range) {
+                Text("Value")
             }
         }
     }
@@ -116,6 +103,27 @@ struct FractionalArchView: View {
     
     static private func normalize(value: CGFloat, min: CGFloat, max: CGFloat) -> CGFloat {
         return (value - min) / (max - min) * 100
+    }
+}
+
+struct Arch: Shape {
+    
+    let startAngle: Angle
+    let endAngle: Angle
+    
+    func path(in rect: CGRect) -> Path {
+        let width = rect.width
+        let height = rect.height
+        let centerX = width / 2
+        let centerY = height
+        let radius = width / 2
+        return Path { path in
+            path.addArc(center: CGPoint(x: centerX, y: centerY),
+                        radius: radius,
+                        startAngle: startAngle, //.degrees(180 + 67.5),
+                        endAngle: endAngle, //.degrees(180 + 67.5 + 7),
+                        clockwise: false)
+        }
     }
 }
 
