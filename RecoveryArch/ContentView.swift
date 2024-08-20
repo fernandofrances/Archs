@@ -12,11 +12,14 @@ struct ContentView: View {
         VStack {
             Color.clear.frame(maxHeight: .infinity)
             FractionalArchView(value: 0, range: 0...100)
-                .background(.blue.opacity(0.5))
                 .frame(height: 100)
+            HStack {
+                FractionalArchView(value: 0, range: 0...100)
+                    .frame(height: 50)
+                FractionalArchView(value: 0, range: 0...100)
+            }
             Color.clear.frame(maxHeight: .infinity)
         }
-       
     }
 }
 
@@ -40,60 +43,55 @@ struct FractionalArchView: View {
             GeometryReader { geometry in
                 ZStack {
                     Arch(startAngle: .degrees(180 + 67.5), endAngle: .degrees(180 + 67.5 + 7))
-                        .stroke(
-                            Color.hex(0xFF9500), style: .init(lineWidth: 5, lineCap: .round)
-                        )
+                        .strokeBorder(style: .init(lineWidth: 5, lineCap: .round))
+                        .foregroundStyle(Color.hex(0xFF9500))
                     
                     Arch(startAngle: .degrees(180 + 67.5 + 7), endAngle: .degrees(180 + 67.5 + 14.5))
-                        .stroke(
-                            Color.hex(0xFF9500),
-                            style: .init(lineWidth: 5))
+                        .strokeBorder(style: .init(lineWidth: 5))
+                        .foregroundStyle(Color.hex(0xFF9500))
                     
-                    Arch(
-                        startAngle: .degrees(180 + 67.5 + 15),
-                        endAngle: .degrees(180 + 67.5 + 15 + 15)
+                    Arch(startAngle: .degrees(180 + 67.5 + 15), endAngle: .degrees(180 + 67.5 + 15 + 15)
                     )
-                    .stroke(Color.hex(0x00E35F), style: .init(lineWidth: 5))
+                    .strokeBorder(style: .init(lineWidth: 5))
+                    .foregroundStyle(Color.hex(0x00E35F))
                     
                     Arch(
                         startAngle: .degrees(180 + 67.5 + 15 + 15.5),
                         endAngle: .degrees(180 + 67.5 + 15 + 15 + 8)
                     )
-                    .stroke(Color.hex(0x009C41), style: .init(lineWidth: 5))
+                    .strokeBorder(style: .init(lineWidth: 5))
+                    .foregroundStyle(Color.hex(0x009C41))
                    
-                    Arch(
-                        startAngle: .degrees(180 + 67.5 + 15 + 15.5 + 7), endAngle: .degrees(180 + 67.5 + 15 + 15 + 15)
+                    Arch(startAngle: .degrees(180 + 67.5 + 15 + 15.5 + 7), endAngle: .degrees(180 + 67.5 + 15 + 15 + 15)
                     )
-                    .stroke(
-                        Color.hex(0x009C41),
-                        style: .init(lineWidth: 5, lineCap: .round))
-                    
+                    .strokeBorder(style: .init(lineWidth: 5, lineCap: .round))
+                    .foregroundStyle(Color.hex(0x009C41))
+                  
                     Circle()
                         .fill(Color.white)
                         .overlay(
                             Circle().stroke(lineWidth: 1).foregroundStyle(Color.black)
                         )
                         .frame(width: 12, height: 12)
-                        .position(self.ballPosition(in: geometry.size))
+                        .position(self.ballPosition(in: geometry.size, insetInArch: 4))
                     
                 }
             }
+            .background(.blue.opacity(0.5))
             
-            Slider(value: $value, in: range) {
-                Text("Value")
-            }
+            Slider(value: $value, in: range)
         }
     }
     
-    private func ballPosition(in size: CGSize) -> CGPoint {
+    private func ballPosition(in size: CGSize, insetInArch: CGFloat) -> CGPoint {
         let startAngle =  180 - 67.5
         let endAngle = 67.5
         let totalAngle = endAngle - startAngle
         
         let angle = Angle(degrees: startAngle + (totalAngle * value / 100))
-        let radius = size.width / 2
+        let radius = size.width - insetInArch/2
         let centerX = size.width / 2
-        let centerY = size.height
+        let centerY = size.width
         
         let x = centerX + radius * cos(angle.radians)
         let y = centerY - radius * sin(angle.radians)
@@ -106,24 +104,30 @@ struct FractionalArchView: View {
     }
 }
 
-struct Arch: Shape {
+struct Arch: InsettableShape{
     
     let startAngle: Angle
     let endAngle: Angle
+    var insetAmount: CGFloat = 0.0
     
     func path(in rect: CGRect) -> Path {
         let width = rect.width
-        let height = rect.height
         let centerX = width / 2
-        let centerY = height
-        let radius = width / 2
+        let centerY = width
+        let radius = width
         return Path { path in
             path.addArc(center: CGPoint(x: centerX, y: centerY),
-                        radius: radius,
-                        startAngle: startAngle, //.degrees(180 + 67.5),
-                        endAngle: endAngle, //.degrees(180 + 67.5 + 7),
+                        radius: radius - insetAmount,
+                        startAngle: startAngle,
+                        endAngle: endAngle,
                         clockwise: false)
         }
+    }
+    
+    func inset(by amount: CGFloat) -> some InsettableShape {
+        var arc = self
+        arc.insetAmount += amount
+        return arc
     }
 }
 
